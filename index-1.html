@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Nexum Core — Aurex Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+/* ─── RESET & BASE ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0D0D0D;
+  --bg2:       #141414;
+  --bg3:       #1C1C1C;
+  --card:      #181818;
+  --border:    rgba(255,255,255,0.07);
+  --purple:    #6C5CE7;
+  --purple-l:  #8577F0;
+  --cyan:      #00D1FF;
+  --cyan-d:    #00A8CC;
+  --text:      #F0F0F0;
+  --text2:     #A0A0A0;
+  --text3:     #606060;
+  --green:     #00C896;
+  --red:       #FF5F7E;
+  --yellow:    #FFD166;
+  --r:         16px;
+  --r2:        24px;
+  --shadow:    0 4px 32px rgba(0,0,0,0.6);
+}
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+input, textarea, select { font-family: inherit; outline: none; }
+a { text-decoration: none; color: inherit; }
+
+/* ─── SCROLLBAR ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ─── APP SHELL ─────────────────────────────────────── */
+#app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; overflow: hidden; }
+
+/* ─── SCREENS ───────────────────────────────────────── */
+.screen { display: none; flex-direction: column; min-height: 100vh; padding-bottom: 88px; opacity: 0; transform: translateY(16px); transition: opacity .28s ease, transform .28s ease; }
+.screen.active { display: flex; opacity: 1; transform: translateY(0); }
+
+/* ─── BOTTOM NAV ─────────────────────────────────────── */
+#nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px; z-index: 100;
+  background: rgba(18,18,18,0.92); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 10px 8px 20px;
+}
+.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 12px; background: none; color: var(--text3); transition: all .2s; }
+.nav-btn svg { width: 22px; height: 22px; }
+.nav-btn span { font-size: 10px; font-weight: 500; letter-spacing: .3px; }
+.nav-btn.active { color: var(--purple); background: rgba(108,92,231,.12); }
+
+/* ─── TOP BAR ────────────────────────────────────────── */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 56px 20px 16px; }
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+.topbar-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--cyan)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: #fff; cursor: pointer; flex-shrink: 0; }
+
+/* ─── CARDS ─────────────────────────────────────────── */
+.card { background: var(--card); border-radius: var(--r2); border: 1px solid var(--border); padding: 20px; }
+.card-sm { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); padding: 16px; }
+.section { padding: 0 20px 24px; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+/* ─── GRADIENT PILL LABEL ────────────────────────────── */
+.pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(108,92,231,.15); border: 1px solid rgba(108,92,231,.3); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 500; color: var(--purple-l); }
+.pill-cyan { background: rgba(0,209,255,.1); border-color: rgba(0,209,255,.25); color: var(--cyan); }
+.pill-green { background: rgba(0,200,150,.1); border-color: rgba(0,200,150,.25); color: var(--green); }
+
+/* ─── BUTTON STYLES ─────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--purple), #8B6CF6);
+  color: #fff; border-radius: 14px; padding: 14px 24px;
+  font-size: 15px; font-weight: 500; letter-spacing: .2px;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 20px rgba(108,92,231,.35);
+}
+.btn-primary:active { transform: scale(.97); }
+.btn-secondary { background: var(--bg3); color: var(--text); border-radius: 14px; padding: 14px 24px; font-size: 15px; font-weight: 500; border: 1px solid var(--border); transition: background .15s; }
+.btn-secondary:active { background: var(--bg2); }
+.btn-icon { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--text2); transition: all .15s; }
+.btn-icon:hover { border-color: var(--purple); color: var(--purple); }
+.btn-danger { background: rgba(255,95,126,.12); color: var(--red); border: 1px solid rgba(255,95,126,.2); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 500; }
+
+/* ─── INPUT ─────────────────────────────────────────── */
+.input-wrap { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+.input-field {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 16px;
+  color: var(--text); font-size: 15px;
+  transition: border-color .2s;
+}
+.input-field:focus { border-color: var(--purple); }
+.input-field::placeholder { color: var(--text3); }
+
+/* ─── PROGRESS BAR ──────────────────────────────────── */
+.prog-wrap { background: var(--bg3); border-radius: 99px; height: 6px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--purple), var(--cyan)); transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+/* ─── CHECKBOX ──────────────────────────────────────── */
+.check-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.check-item:last-child { border-bottom: none; }
+.check-box { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; flex-shrink: 0; }
+.check-box.done { background: linear-gradient(135deg, var(--purple), var(--cyan)); border-color: transparent; }
+.check-box.done svg { display: block; }
+.check-box svg { display: none; width: 13px; height: 13px; color: #fff; }
+.check-label { font-size: 15px; flex: 1; }
+.check-label.done { text-decoration: line-through; color: var(--text3); }
+
+/* ──────────────── SCREEN 1 — DASHBOARD ──────────────── */
+#screen-home .hero {
+  margin: 0 20px 20px;
+  background: linear-gradient(135deg, #1A1730 0%, #111827 100%);
+  border-radius: var(--r2);
+  border: 1px solid rgba(108,92,231,.2);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+#screen-home .hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(108,92,231,.25), transparent 70%);
+  pointer-events: none;
+}
+#screen-home .hero::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 40px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(0,209,255,.1), transparent 70%);
+  pointer-events: none;
+}
+.hero-greeting { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+.hero-name { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 18px; }
+.hero-stats { display: flex; gap: 20px; }
+.hero-stat { flex: 1; }
+.hero-stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+.hero-stat-val.purple { color: var(--purple-l); }
+.hero-stat-val.cyan { color: var(--cyan); }
+.hero-stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.quick-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color .2s, transform .15s;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.quick-card:active { transform: scale(.97); }
+.quick-card:hover { border-color: rgba(108,92,231,.3); }
+.quick-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.quick-card-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+.quick-card-sub { font-size: 11px; color: var(--text2); }
+
+/* ─── Daily summary bar ─────────── */
+.day-ring-wrap { display: flex; align-items: center; gap: 16px; }
+.ring-label { flex: 1; }
+.ring-title { font-size: 14px; font-weight: 500; }
+.ring-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.ring-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+
+/* ──────────────── SCREEN 2 — TAREFAS ────────────────── */
+.add-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 18px; margin: 0 20px 20px; }
+.add-row { display: flex; gap: 10px; align-items: flex-end; }
+.add-row .input-field { flex: 1; }
+.task-list { padding: 0 20px; display: flex; flex-direction: column; gap: 0; }
+.task-item { display: flex; align-items: center; gap: 12px; padding: 15px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; transition: opacity .2s; }
+.task-item.done-item { opacity: .55; }
+.task-text { flex: 1; font-size: 14px; line-height: 1.4; }
+.task-text.done { text-decoration: line-through; color: var(--text3); }
+.task-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.badge { background: var(--bg3); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--text2); white-space: nowrap; }
+
+/* ──────────────── SCREEN 3 — FINANÇAS ───────────────── */
+.finance-hero {
+  margin: 0 20px 20px;
+  background: linear-gradient(135deg, #0D1A1F, #0F1A10);
+  border-radius: var(--r2);
+  border: 1px solid rgba(0,209,255,.15);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.finance-hero::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(0,209,255,.18), transparent 70%);
+  pointer-events: none;
+}
+.finance-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.finance-total { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--cyan); }
+.finance-period { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+.expense-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; }
+.expense-icon { width: 38px; height: 38px; border-radius: 11px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.expense-info { flex: 1; }
+.expense-name { font-size: 14px; font-weight: 500; }
+.expense-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.expense-val { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--red); }
+
+/* ──────────────── SCREEN 4 — HÁBITOS ────────────────── */
+.habit-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.habit-pct { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--purple-l); }
+.habit-pct-sub { font-size: 12px; color: var(--text2); }
+
+.habit-item { display: flex; align-items: center; gap: 14px; padding: 15px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color .2s; }
+.habit-item.done { border-color: rgba(0,200,150,.3); background: rgba(0,200,150,.04); }
+.habit-emoji { font-size: 20px; flex-shrink: 0; }
+.habit-info { flex: 1; }
+.habit-name { font-size: 14px; font-weight: 500; }
+.habit-streak { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.habit-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.habit-item.done .habit-check { background: var(--green); border-color: var(--green); }
+
+/* ──────────────── SCREEN 5 — PERFIL ─────────────────── */
+.profile-card {
+  margin: 0 20px 20px;
+  background: linear-gradient(135deg, #13112A, #0D1A1F);
+  border-radius: var(--r2);
+  border: 1px solid rgba(108,92,231,.25);
+  padding: 28px;
+  display: flex; align-items: center; gap: 18px;
+}
+.profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--cyan)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; flex-shrink: 0; }
+.profile-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.profile-email { font-size: 12px; color: var(--text2); margin-top: 3px; }
+
+.plan-card { margin: 0 20px 20px; background: linear-gradient(135deg, rgba(108,92,231,.12), rgba(0,209,255,.06)); border: 1px solid rgba(108,92,231,.25); border-radius: var(--r2); padding: 20px; }
+.plan-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.plan-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--purple-l); }
+.plan-desc { font-size: 13px; color: var(--text2); margin-top: 6px; margin-bottom: 16px; }
+.plan-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.plan-feat { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.plan-feat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
+.plan-feat-lock { color: var(--text3); }
+.lock-icon { font-size: 11px; color: var(--text3); margin-left: auto; }
+
+.settings-list { display: flex; flex-direction: column; gap: 4px; }
+.settings-item { display: flex; align-items: center; gap: 14px; padding: 15px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; transition: background .15s; cursor: pointer; }
+.settings-item:active { background: var(--bg3); }
+.settings-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.settings-text { flex: 1; font-size: 14px; font-weight: 500; }
+.settings-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.chevron { color: var(--text3); }
+
+/* ─── MODAL ─────────────────────────────────────────── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); z-index: 200; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border-top-left-radius: 28px; border-top-right-radius: 28px; border-top: 1px solid var(--border); padding: 24px 20px 36px; width: 100%; max-width: 430px; animation: slideUp .25s ease; }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions button { flex: 1; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 500; }
+
+/* ─── EMPTY STATE ─────────────────────────────────── */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center; }
+.empty-icon { font-size: 44px; margin-bottom: 14px; opacity: .6; }
+.empty-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.empty-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+/* ─── TOAST ─────────────────────────────────────────── */
+#toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 500; z-index: 999; transition: transform .3s ease; white-space: nowrap; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── PREMIUM BLUR ───────────────────────────────────── */
+.premium-gate { position: relative; }
+.premium-gate .blur-cover { position: absolute; inset: 0; border-radius: 14px; backdrop-filter: blur(4px); background: rgba(13,13,13,.5); display: flex; align-items: center; justify-content: center; z-index: 5; }
+.premium-badge { background: linear-gradient(135deg, var(--purple), var(--cyan)); color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+
+/* ─── UTILS ──────────────────────────────────────────── */
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.mt-4 { margin-top: 4px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.w-full { width: 100%; }
+.gap-10 { gap: 10px; }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.text-cyan { color: var(--cyan); }
+.text-purple { color: var(--purple-l); }
+
+/* ─── DIVIDER ────────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 0 20px 24px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── TOAST ── -->
+  <div id="toast"></div>
+
+  <!-- ════════════════ SCREEN: HOME ════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="topbar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;font-weight:500">NEXUM CORE</div>
+        <div class="topbar-title" id="home-date-label">Hoje</div>
+      </div>
+      <div class="avatar" id="home-avatar">N</div>
+    </div>
+
+    <!-- Hero card -->
+    <div class="hero section" style="padding:0 20px 20px">
+      <div class="hero" style="margin:0">
+        <div class="hero-greeting">Olá de volta 👋</div>
+        <div class="hero-name" id="home-user-name">Usuário</div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-val purple" id="home-tasks-done">0/0</div>
+            <div class="hero-stat-lbl">Tarefas hoje</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val cyan" id="home-spend">R$ 0</div>
+            <div class="hero-stat-lbl">Gasto hoje</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-val" id="home-habits">0%</div>
+            <div class="hero-stat-lbl" style="color:var(--text2)">Hábitos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily progress -->
+    <div class="section">
+      <div class="section-title">Progresso diário</div>
+      <div class="card">
+        <div class="day-ring-wrap" style="margin-bottom:14px">
+          <div class="ring-label">
+            <div class="ring-title">Hábitos completados</div>
+            <div class="ring-sub" id="home-habit-sub">0 de 0 hábitos</div>
+          </div>
+          <div class="ring-val text-green" id="home-hab-pct">0%</div>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" id="home-hab-bar" style="width:0%"></div></div>
+        <div class="day-ring-wrap" style="margin-top:16px;margin-bottom:14px">
+          <div class="ring-label">
+            <div class="ring-title">Tarefas concluídas</div>
+            <div class="ring-sub" id="home-task-sub">0 de 0 tarefas</div>
+          </div>
+          <div class="ring-val text-purple" id="home-task-pct">0%</div>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" id="home-task-bar" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--purple-l))"></div></div>
+      </div>
+    </div>
+
+    <!-- Quick access -->
+    <div class="section">
+      <div class="section-title">Acesso rápido</div>
+      <div class="quick-grid">
+        <div class="quick-card" onclick="goTo('tasks')">
+          <div class="quick-icon" style="background:rgba(108,92,231,.15)">
+            <svg width="20" height="20" fill="none" stroke="var(--purple-l)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+          </div>
+          <div class="quick-card-title">Tarefas</div>
+          <div class="quick-card-sub" id="quick-tasks-lbl">— pendentes</div>
+        </div>
+        <div class="quick-card" onclick="goTo('finance')">
+          <div class="quick-icon" style="background:rgba(0,209,255,.1)">
+            <svg width="20" height="20" fill="none" stroke="var(--cyan)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v2m0 8v2M9 12h6"/></svg>
+          </div>
+          <div class="quick-card-title">Finanças</div>
+          <div class="quick-card-sub" id="quick-spend-lbl">R$ 0 hoje</div>
+        </div>
+        <div class="quick-card" onclick="goTo('habits')">
+          <div class="quick-icon" style="background:rgba(0,200,150,.1)">
+            <svg width="20" height="20" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
+          </div>
+          <div class="quick-card-title">Hábitos</div>
+          <div class="quick-card-sub" id="quick-hab-lbl">0% hoje</div>
+        </div>
+        <div class="quick-card" onclick="goTo('profile')">
+          <div class="quick-icon" style="background:rgba(255,209,102,.1)">
+            <svg width="20" height="20" fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div class="quick-card-title">Perfil</div>
+          <div class="quick-card-sub">Free Plan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SCREEN: TASKS ════════════════ -->
+  <div id="screen-tasks" class="screen">
+    <div class="topbar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;font-weight:500">PRODUTIVIDADE</div>
+        <div class="topbar-title">Tarefas</div>
+      </div>
+      <div class="pill" id="tasks-count-badge">0 total</div>
+    </div>
+
+    <!-- Add form -->
+    <div class="add-form">
+      <div class="input-wrap" style="margin-bottom:12px">
+        <label class="input-label">Nova tarefa</label>
+        <input class="input-field" id="task-input" type="text" placeholder="O que você precisa fazer?" maxlength="80" />
+      </div>
+      <div class="flex-between gap-10">
+        <select class="input-field" id="task-priority" style="flex:1;color:var(--text2)">
+          <option value="normal">📌 Normal</option>
+          <option value="urgent">🔴 Urgente</option>
+          <option value="low">🔵 Baixa</option>
+        </select>
+        <button class="btn-primary" onclick="addTask()" style="padding:13px 22px">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Task list -->
+    <div id="task-list-wrap" style="padding:0 20px"></div>
+  </div>
+
+  <!-- ════════════════ SCREEN: FINANCE ════════════════ -->
+  <div id="screen-finance" class="screen">
+    <div class="topbar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;font-weight:500">CONTROLE</div>
+        <div class="topbar-title">Finanças</div>
+      </div>
+      <button class="btn-icon" onclick="openFinanceModal()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <!-- Hero total -->
+    <div class="finance-hero">
+      <div class="finance-label">Total gasto hoje</div>
+      <div class="finance-total" id="finance-total">R$ 0,00</div>
+      <div class="finance-period" id="finance-count">Nenhum gasto registrado</div>
+    </div>
+
+    <!-- Category summary -->
+    <div class="section">
+      <div class="section-title">Esta semana</div>
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:12px">
+          <span style="font-size:13px;color:var(--text2)">Total semanal</span>
+          <span class="ring-val text-cyan" id="finance-week-total">R$ 0,00</span>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" id="finance-week-bar" style="width:0%;background:linear-gradient(90deg,var(--cyan),var(--cyan-d))"></div></div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3)" id="finance-week-meta">0 gastos registrados</div>
+      </div>
+    </div>
+
+    <!-- Premium gate: budget insights -->
+    <div class="section">
+      <div class="section-title">Inteligência financeira</div>
+      <div class="premium-gate">
+        <div class="card" style="opacity:.5">
+          <div class="flex-between" style="margin-bottom:10px">
+            <span style="font-size:14px;font-weight:500">Análise de gastos</span>
+            <span style="font-size:20px">📊</span>
+          </div>
+          <div style="height:60px;background:var(--bg3);border-radius:10px"></div>
+        </div>
+        <div class="blur-cover">
+          <div class="premium-badge">🔒 Premium</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="section">
+      <div class="flex-between" style="margin-bottom:14px">
+        <div class="section-title" style="margin-bottom:0">Lançamentos de hoje</div>
+        <button onclick="clearTodayExpenses()" style="background:none;border:none;font-size:11px;color:var(--text3);padding:0">Limpar</button>
+      </div>
+      <div id="expense-list"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SCREEN: HABITS ════════════════ -->
+  <div id="screen-habits" class="screen">
+    <div class="topbar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;font-weight:500">ROTINA</div>
+        <div class="topbar-title">Hábitos</div>
+      </div>
+      <div class="pill pill-green" id="habits-pct-pill">0%</div>
+    </div>
+
+    <!-- Progress -->
+    <div class="section">
+      <div class="card">
+        <div class="habit-header">
+          <div>
+            <div class="habit-pct" id="hab-pct-big">0%</div>
+            <div class="habit-pct-sub" id="hab-pct-sub">0 de 0 hábitos completos</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:24px;margin-bottom:4px">🎯</div>
+            <div style="font-size:11px;color:var(--text2)">Meta diária</div>
+          </div>
+        </div>
+        <div class="prog-wrap mt-8"><div class="prog-bar" id="hab-prog-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Habit list -->
+    <div class="section">
+      <div class="section-title">Lista de hoje</div>
+      <div id="habit-list"></div>
+    </div>
+
+    <!-- Premium: streak tracking -->
+    <div class="section">
+      <div class="section-title">Sequência de dias</div>
+      <div class="premium-gate">
+        <div class="card" style="opacity:.5">
+          <div style="display:flex;gap:6px;margin-bottom:12px">
+            <div style="height:32px;flex:1;border-radius:6px;background:var(--purple);opacity:.8"></div>
+            <div style="height:24px;flex:1;border-radius:6px;background:var(--purple);opacity:.5;align-self:flex-end"></div>
+            <div style="height:40px;flex:1;border-radius:6px;background:var(--cyan);opacity:.7;align-self:flex-end"></div>
+            <div style="height:20px;flex:1;border-radius:6px;background:var(--purple);opacity:.4;align-self:flex-end"></div>
+            <div style="height:36px;flex:1;border-radius:6px;background:var(--cyan);opacity:.6;align-self:flex-end"></div>
+            <div style="height:28px;flex:1;border-radius:6px;background:var(--purple);opacity:.5;align-self:flex-end"></div>
+            <div style="height:44px;flex:1;border-radius:6px;background:var(--cyan);opacity:.9;align-self:flex-end"></div>
+          </div>
+          <div style="font-size:13px;color:var(--text2)">Histórico de 7 dias — Streak 🔥</div>
+        </div>
+        <div class="blur-cover">
+          <div class="premium-badge">🔒 Premium</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ SCREEN: PROFILE ════════════════ -->
+  <div id="screen-profile" class="screen">
+    <div class="topbar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);letter-spacing:1px;font-weight:500">AUREX LABS</div>
+        <div class="topbar-title">Perfil</div>
+      </div>
+    </div>
+
+    <!-- Profile card -->
+    <div class="profile-card" style="margin:0 20px 20px">
+      <div class="profile-avatar" id="prof-avatar">N</div>
+      <div>
+        <div class="profile-name" id="prof-name">Usuário</div>
+        <div class="profile-email">nexumcore@aurexlabs.io</div>
+        <div class="pill mt-4" style="display:inline-flex">⚡ Free Plan</div>
+      </div>
+    </div>
+
+    <!-- Plan -->
+    <div class="plan-card">
+      <div class="plan-label">Plano atual</div>
+      <div class="plan-name">Free</div>
+      <div class="plan-desc">Recursos essenciais desbloqueados.</div>
+      <div class="plan-features">
+        <div class="plan-feat"><div class="plan-feat-dot"></div> Tarefas ilimitadas</div>
+        <div class="plan-feat"><div class="plan-feat-dot"></div> Controle de hábitos</div>
+        <div class="plan-feat"><div class="plan-feat-dot"></div> Registro financeiro básico</div>
+        <div class="plan-feat"><div class="plan-feat-dot" style="background:var(--text3)"></div> <span class="plan-feat-lock">Análise financeira com IA</span> <span class="lock-icon">🔒</span></div>
+        <div class="plan-feat"><div class="plan-feat-dot" style="background:var(--text3)"></div> <span class="plan-feat-lock">Streak de hábitos (7 dias)</span> <span class="lock-icon">🔒</span></div>
+        <div class="plan-feat"><div class="plan-feat-dot" style="background:var(--text3)"></div> <span class="plan-feat-lock">Relatórios exportáveis</span> <span class="lock-icon">🔒</span></div>
+      </div>
+      <button class="btn-primary w-full" onclick="showToast('🚀 Em breve! Versão Premium chegando.')">Upgrade para Premium</button>
+    </div>
+
+    <!-- Settings -->
+    <div class="section">
+      <div class="section-title">Configurações</div>
+      <div class="settings-list">
+        <div class="settings-item" onclick="openNameModal()">
+          <div class="settings-icon" style="background:rgba(108,92,231,.15)">
+            <svg width="18" height="18" fill="none" stroke="var(--purple-l)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div class="flex-between" style="flex:1">
+            <div>
+              <div class="settings-text">Nome de exibição</div>
+              <div class="settings-sub" id="settings-name-val">Usuário</div>
+            </div>
+            <svg class="chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+        <div class="settings-item" onclick="showToast('🌙 Tema dark ativo por padrão.')">
+          <div class="settings-icon" style="background:rgba(255,209,102,.1)">
+            <svg width="18" height="18" fill="none" stroke="var(--yellow)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </div>
+          <div class="flex-between" style="flex:1">
+            <div>
+              <div class="settings-text">Tema</div>
+              <div class="settings-sub">Dark (padrão)</div>
+            </div>
+            <svg class="chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+        <div class="settings-item" onclick="showToast('🔔 Notificações ativas.')">
+          <div class="settings-icon" style="background:rgba(0,200,150,.1)">
+            <svg width="18" height="18" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <div class="flex-between" style="flex:1">
+            <div>
+              <div class="settings-text">Notificações</div>
+              <div class="settings-sub">Ativas</div>
+            </div>
+            <svg class="chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+        <div class="settings-item" onclick="clearAllData()">
+          <div class="settings-icon" style="background:rgba(255,95,126,.1)">
+            <svg width="18" height="18" fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+          </div>
+          <div class="flex-between" style="flex:1">
+            <div>
+              <div class="settings-text" style="color:var(--red)">Limpar todos os dados</div>
+              <div class="settings-sub">Reset completo do app</div>
+            </div>
+            <svg class="chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version -->
+    <div style="text-align:center;padding:20px;color:var(--text3);font-size:11px">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px">Nexum Core</div>
+      v1.0.0 — Aurex Labs © 2025
+    </div>
+  </div>
+
+  <!-- ════════════════ BOTTOM NAV ════════════════ -->
+  <nav id="nav">
+    <button class="nav-btn active" id="nav-home" onclick="goTo('home')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="nav-btn" id="nav-tasks" onclick="goTo('tasks')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Tarefas</span>
+    </button>
+    <button class="nav-btn" id="nav-finance" onclick="goTo('finance')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Finanças</span>
+    </button>
+    <button class="nav-btn" id="nav-habits" onclick="goTo('habits')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
+      <span>Hábitos</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="goTo('profile')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+      <span>Perfil</span>
+    </button>
+  </nav>
+
+  <!-- ════════════════ MODALS ════════════════ -->
+
+  <!-- Finance modal -->
+  <div class="modal-overlay" id="finance-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Novo gasto</div>
+      <div class="input-wrap" style="margin-bottom:12px">
+        <label class="input-label">Descrição</label>
+        <input class="input-field" id="expense-name" type="text" placeholder="Ex: Almoço, Uber, Mercado..." maxlength="60" />
+      </div>
+      <div class="flex-between gap-10" style="margin-bottom:12px">
+        <div class="input-wrap" style="flex:1">
+          <label class="input-label">Valor (R$)</label>
+          <input class="input-field" id="expense-value" type="number" placeholder="0,00" min="0" step="0.01" />
+        </div>
+        <div class="input-wrap" style="flex:1">
+          <label class="input-label">Categoria</label>
+          <select class="input-field" id="expense-cat">
+            <option value="🍽️">🍽️ Alimentação</option>
+            <option value="🚗">🚗 Transporte</option>
+            <option value="🛍️">🛍️ Compras</option>
+            <option value="🏥">🏥 Saúde</option>
+            <option value="🎮">🎮 Lazer</option>
+            <option value="📦">📦 Outros</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeFinanceModal()">Cancelar</button>
+        <button class="btn-primary" onclick="addExpense()">Salvar gasto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Name modal -->
+  <div class="modal-overlay" id="name-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Seu nome</div>
+      <div class="input-wrap" style="margin-bottom:20px">
+        <label class="input-label">Como devemos te chamar?</label>
+        <input class="input-field" id="name-input" type="text" placeholder="Seu nome aqui" maxlength="30" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeNameModal()">Cancelar</button>
+        <button class="btn-primary" onclick="saveName()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   NEXUM CORE — APP LOGIC
+   Aurex Labs © 2025
+═══════════════════════════════════════════════════════ */
+
+// ─── STORAGE SERVICE ──────────────────────────────────
+const Storage = {
+  get(key, fallback = null) {
+    try { const v = localStorage.getItem('nexum_' + key); return v !== null ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+  set(key, val) {
+    try { localStorage.setItem('nexum_' + key, JSON.stringify(val)); } catch {}
+  },
+  remove(key) { localStorage.removeItem('nexum_' + key); }
+};
+
+// ─── MODELS ───────────────────────────────────────────
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+function loadTasks() { return Storage.get('tasks', []); }
+function saveTasks(t) { Storage.set('tasks', t); }
+
+function loadExpenses() { return Storage.get('expenses', []); }
+function saveExpenses(e) { Storage.set('expenses', e); }
+
+function loadHabits() {
+  const defaults = [
+    { id: 1, name: 'Beber 2L de água', emoji: '💧', done: false },
+    { id: 2, name: 'Exercício físico', emoji: '🏃', done: false },
+    { id: 3, name: 'Meditação', emoji: '🧘', done: false },
+    { id: 4, name: 'Leitura (30 min)', emoji: '📚', done: false },
+    { id: 5, name: 'Sem redes sociais', emoji: '📵', done: false },
+    { id: 6, name: 'Dormir cedo', emoji: '🌙', done: false },
+  ];
+  const saved = Storage.get('habits_' + todayKey(), null);
+  return saved !== null ? saved : defaults;
+}
+function saveHabits(h) { Storage.set('habits_' + todayKey(), h); }
+
+function loadUser() { return Storage.get('user', { name: 'Usuário' }); }
+function saveUser(u) { Storage.set('user', u); }
+
+// ─── NAVIGATION ───────────────────────────────────────
+let current = 'home';
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.getElementById('nav-' + screen).classList.add('active');
+  current = screen;
+  if (screen === 'home') renderHome();
+  if (screen === 'tasks') renderTasks();
+  if (screen === 'finance') renderFinance();
+  if (screen === 'habits') renderHabits();
+  if (screen === 'profile') renderProfile();
+  window.scrollTo(0, 0);
+}
+
+// ─── TOAST ────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── FORMAT ───────────────────────────────────────────
+function fmtMoney(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ─── HOME ─────────────────────────────────────────────
+function renderHome() {
+  const user = loadUser();
+  const tasks = loadTasks();
+  const expenses = loadExpenses();
+  const habits = loadHabits();
+  const today = todayKey();
+
+  // Name & date
+  document.getElementById('home-user-name').textContent = user.name;
+  document.getElementById('home-avatar').textContent = user.name.charAt(0).toUpperCase();
+  const d = new Date();
+  document.getElementById('home-date-label').textContent = d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' });
+
+  // Tasks
+  const todayTasks = tasks.filter(t => t.date === today);
+  const doneTasks = todayTasks.filter(t => t.done).length;
+  document.getElementById('home-tasks-done').textContent = `${doneTasks}/${todayTasks.length}`;
+  document.getElementById('quick-tasks-lbl').textContent = `${todayTasks.filter(t=>!t.done).length} pendentes`;
+  const taskPct = todayTasks.length ? Math.round(doneTasks / todayTasks.length * 100) : 0;
+  document.getElementById('home-task-pct').textContent = taskPct + '%';
+  document.getElementById('home-task-bar').style.width = taskPct + '%';
+  document.getElementById('home-task-sub').textContent = `${doneTasks} de ${todayTasks.length} tarefas`;
+
+  // Expenses
+  const todayExp = expenses.filter(e => e.date === today);
+  const todayTotal = todayExp.reduce((s, e) => s + parseFloat(e.value), 0);
+  document.getElementById('home-spend').textContent = fmtMoney(todayTotal);
+  document.getElementById('quick-spend-lbl').textContent = fmtMoney(todayTotal) + ' hoje';
+
+  // Habits
+  const doneHabs = habits.filter(h => h.done).length;
+  const habPct = habits.length ? Math.round(doneHabs / habits.length * 100) : 0;
+  document.getElementById('home-habits').textContent = habPct + '%';
+  document.getElementById('home-hab-pct').textContent = habPct + '%';
+  document.getElementById('home-hab-bar').style.width = habPct + '%';
+  document.getElementById('home-habit-sub').textContent = `${doneHabs} de ${habits.length} hábitos`;
+  document.getElementById('quick-hab-lbl').textContent = habPct + '% hoje';
+}
+
+// ─── TASKS ────────────────────────────────────────────
+function renderTasks() {
+  const tasks = loadTasks();
+  const today = todayKey();
+  const todayTasks = tasks.filter(t => t.date === today);
+  document.getElementById('tasks-count-badge').textContent = todayTasks.length + ' total';
+
+  const wrap = document.getElementById('task-list-wrap');
+  if (!todayTasks.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Tudo limpo!</div><div class="empty-sub">Adicione tarefas para o seu dia acima.</div></div>`;
+    return;
+  }
+
+  const prioOrder = { urgent: 0, normal: 1, low: 2 };
+  const sorted = [...todayTasks].sort((a, b) => (prioOrder[a.priority] || 1) - (prioOrder[b.priority] || 1));
+
+  const prioLabel = { urgent: '🔴 Urgente', normal: '📌 Normal', low: '🔵 Baixa' };
+
+  wrap.innerHTML = sorted.map(t => `
+    <div class="task-item ${t.done ? 'done-item' : ''}" id="task-${t.id}">
+      <div class="check-box ${t.done ? 'done' : ''}" onclick="toggleTask('${t.id}')">
+        <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="flex:1">
+        <div class="task-text ${t.done ? 'done' : ''}">${escHtml(t.text)}</div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <span class="badge">${prioLabel[t.priority] || '📌 Normal'}</span>
+          <span class="badge">${fmtDate(t.createdAt)}</span>
+        </div>
+      </div>
+      <button class="btn-danger" onclick="deleteTask('${t.id}')">Remover</button>
+    </div>
+  `).join('');
+}
+
+function addTask() {
+  const input = document.getElementById('task-input');
+  const priority = document.getElementById('task-priority').value;
+  const text = input.value.trim();
+  if (!text) { showToast('⚠️ Digite uma tarefa!'); return; }
+
+  const tasks = loadTasks();
+  tasks.push({ id: uid(), text, priority, done: false, date: todayKey(), createdAt: new Date().toISOString() });
+  saveTasks(tasks);
+  input.value = '';
+  renderTasks();
+  showToast('✅ Tarefa adicionada!');
+}
+
+function toggleTask(id) {
+  const tasks = loadTasks();
+  const t = tasks.find(x => x.id === id);
+  if (t) { t.done = !t.done; saveTasks(tasks); renderTasks(); }
+}
+
+function deleteTask(id) {
+  let tasks = loadTasks();
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(tasks);
+  renderTasks();
+  showToast('🗑️ Tarefa removida.');
+}
+
+// ─── FINANCE ──────────────────────────────────────────
+function renderFinance() {
+  const expenses = loadExpenses();
+  const today = todayKey();
+  const todayExp = expenses.filter(e => e.date === today);
+  const todayTotal = todayExp.reduce((s, e) => s + parseFloat(e.value), 0);
+  document.getElementById('finance-total').textContent = fmtMoney(todayTotal);
+  document.getElementById('finance-count').textContent = todayExp.length ? `${todayExp.length} lançamento${todayExp.length > 1 ? 's' : ''} hoje` : 'Nenhum gasto registrado';
+
+  // Week
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 6);
+  const weekExp = expenses.filter(e => new Date(e.date) >= weekStart);
+  const weekTotal = weekExp.reduce((s, e) => s + parseFloat(e.value), 0);
+  document.getElementById('finance-week-total').textContent = fmtMoney(weekTotal);
+  document.getElementById('finance-week-meta').textContent = weekExp.length + ' gastos nos últimos 7 dias';
+  const maxWeek = 1000;
+  document.getElementById('finance-week-bar').style.width = Math.min(100, (weekTotal / maxWeek) * 100) + '%';
+
+  const list = document.getElementById('expense-list');
+  if (!todayExp.length) {
+    list.innerHTML = `<div class="empty" style="padding:24px 0"><div class="empty-icon">💸</div><div class="empty-title">Sem gastos hoje</div><div class="empty-sub">Toque em + para registrar um gasto.</div></div>`;
+    return;
+  }
+  list.innerHTML = [...todayExp].reverse().map(e => `
+    <div class="expense-item">
+      <div class="expense-icon">${e.category}</div>
+      <div class="expense-info">
+        <div class="expense-name">${escHtml(e.name)}</div>
+        <div class="expense-time">${fmtDate(e.createdAt)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="expense-val">${fmtMoney(e.value)}</div>
+        <button class="btn-danger" onclick="deleteExpense('${e.id}')">Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openFinanceModal() { document.getElementById('finance-modal').classList.add('open'); }
+function closeFinanceModal() { document.getElementById('finance-modal').classList.remove('open'); document.getElementById('expense-name').value = ''; document.getElementById('expense-value').value = ''; }
+
+function addExpense() {
+  const name = document.getElementById('expense-name').value.trim();
+  const value = parseFloat(document.getElementById('expense-value').value);
+  const category = document.getElementById('expense-cat').value;
+  if (!name) { showToast('⚠️ Informe a descrição.'); return; }
+  if (!value || value <= 0) { showToast('⚠️ Informe um valor válido.'); return; }
+
+  const expenses = loadExpenses();
+  expenses.push({ id: uid(), name, value, category, date: todayKey(), createdAt: new Date().toISOString() });
+  saveExpenses(expenses);
+  closeFinanceModal();
+  renderFinance();
+  showToast('💰 Gasto registrado!');
+}
+
+function deleteExpense(id) {
+  let expenses = loadExpenses();
+  expenses = expenses.filter(e => e.id !== id);
+  saveExpenses(expenses);
+  renderFinance();
+  showToast('🗑️ Gasto removido.');
+}
+
+function clearTodayExpenses() {
+  if (!confirm('Limpar todos os gastos de hoje?')) return;
+  const today = todayKey();
+  let expenses = loadExpenses();
+  expenses = expenses.filter(e => e.date !== today);
+  saveExpenses(expenses);
+  renderFinance();
+  showToast('🗑️ Gastos de hoje removidos.');
+}
+
+// ─── HABITS ───────────────────────────────────────────
+function renderHabits() {
+  const habits = loadHabits();
+  const done = habits.filter(h => h.done).length;
+  const pct = habits.length ? Math.round(done / habits.length * 100) : 0;
+
+  document.getElementById('hab-pct-big').textContent = pct + '%';
+  document.getElementById('hab-pct-sub').textContent = `${done} de ${habits.length} hábitos completos`;
+  document.getElementById('hab-prog-bar').style.width = pct + '%';
+  document.getElementById('habits-pct-pill').textContent = pct + '%';
+
+  const list = document.getElementById('habit-list');
+  list.innerHTML = habits.map(h => `
+    <div class="habit-item ${h.done ? 'done' : ''}" onclick="toggleHabit(${h.id})">
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name" style="${h.done ? 'text-decoration:line-through;color:var(--text3)' : ''}">${escHtml(h.name)}</div>
+        <div class="habit-streak">${h.done ? '✅ Concluído hoje' : 'Pendente para hoje'}</div>
+      </div>
+      <div class="habit-check">
+        ${h.done ? '<svg width="12" height="12" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleHabit(id) {
+  const habits = loadHabits();
+  const h = habits.find(x => x.id === id);
+  if (h) { h.done = !h.done; saveHabits(habits); renderHabits(); if (h.done) showToast('🎉 Hábito concluído!'); }
+}
+
+// ─── PROFILE ──────────────────────────────────────────
+function renderProfile() {
+  const user = loadUser();
+  document.getElementById('prof-name').textContent = user.name;
+  document.getElementById('prof-avatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('settings-name-val').textContent = user.name;
+}
+
+function openNameModal() {
+  const user = loadUser();
+  document.getElementById('name-input').value = user.name;
+  document.getElementById('name-modal').classList.add('open');
+}
+function closeNameModal() { document.getElementById('name-modal').classList.remove('open'); }
+function saveName() {
+  const val = document.getElementById('name-input').value.trim();
+  if (!val) { showToast('⚠️ Digite um nome.'); return; }
+  saveUser({ name: val });
+  closeNameModal();
+  renderProfile();
+  renderHome();
+  showToast('✅ Nome atualizado!');
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ Isso irá apagar TODOS os dados. Continuar?')) return;
+  ['tasks', 'expenses', 'user', 'habits_' + todayKey()].forEach(k => Storage.remove(k));
+  showToast('🗑️ Dados resetados.');
+  renderHome(); renderProfile();
+}
+
+// ─── UTILS ────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2, 11); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.classList.remove('open'); } });
+});
+
+// Enter key for task
+document.addEventListener('DOMContentLoaded', () => {});
+document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+document.getElementById('expense-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('expense-value').focus(); });
+document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); });
+
+// ─── BOOT ─────────────────────────────────────────────
+renderHome();
+</script>
+</body>
+</html>
